@@ -57,3 +57,131 @@ def chat_viewset(request):
         "data": serializer.data,
         "reply": gemini_reply
     })
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    def create(self, request):
+        data = request.data
+
+        name = data.get("name")
+        if not name:
+            return Response({
+                "status": False,
+                "message": "Name is required",
+                "data": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        email = data.get("email")
+        if not email:
+            return Response({
+                "status": False,
+                "message": "Email is required",
+                "data": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        elif User.objects.filter(email=email).exists():
+            return Response({
+                "status": False,
+                "message": "Email is already exists",
+                "data": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if '@' in email and email.count('@') == 1:
+            email_validate = email.split('@')[1].lower()
+
+        else:
+            return Response({
+                "status": False,
+                "message": "Enter a valid email address",
+                "data": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        password = data.get("password")
+        if not password:
+            return Response({
+                "status": False,
+                "message": "Password is required",
+                "data": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                "status": True,
+                "message": "User created successfully",
+                "data": serializer.data
+            }, status=status.HTTP_201_CREATED)
+        
+        return Response({
+            "status": False,
+            "message": serializer.errors,
+            "data": None
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class LoginViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = LoginSerializer
+
+    def create(self, request):
+        data = request.data
+        email = data.get("email")
+        if not email:
+            return Response({
+                "status": False,
+                "message": "Email is required",
+                "data": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if '@' in email and email.count('@') == 1:
+            email_validate = email.split('@')[1].lower()
+
+        else:
+            return Response({
+                "status": False,
+                "message": "Enter a valid email address",
+                "data": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        password = data.get("password")
+        if not password:
+            return Response({
+                "status": False,
+                "message": "Password is required",
+                "data": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({
+                "status": False,
+                "message": "User does not exists",
+                "data": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not check_password(password, user.password):
+            return Response({
+                "status": False,
+                "message": "Invalid Password",
+                "data": None 
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            "status": True,
+            "message": "Login Successful",
+            "data": {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "tokens": {
+                    "access": str(refresh.access_token),
+                    "refresh": str(refresh)
+                }
+            }
+        }, status=status.HTTP_200_OK)
+    
