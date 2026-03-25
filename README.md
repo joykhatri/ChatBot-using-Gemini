@@ -1,6 +1,10 @@
 # Chat-Bot-using-Gemini
 Integrating Gemini models in the django &amp; django rest framework project. Develop own chatbot using Gemini Models.
 
+## TechStack
+- Backend:- Django, DjagoRestFramework
+- Frontend (GUI):- tkinter
+
 ## get GEMINI API KEY
 
 - go to https://aistudio.google.com/
@@ -30,7 +34,8 @@ source .venv/bin/activate
 ### 3️⃣ Install Dependencies
 ```bash
 pip install django djangorestframework mysqlclient
-pip install google-generativeai   
+pip install google-generativeai
+pip install djangorestframework-simplejwt     # JWT Authentication
 ```
 
 ### 4️⃣ Start Django Project & App
@@ -79,3 +84,35 @@ python manage.py runserver
   python gemini.py
   ```
 - for tkinter GUI (for Chat)
+
+## 🔑 API Endpoints
+
+| Method | Endpoint                                            | Description                              |
+| ------ | --------------------------------------------------- | ---------------------------------------- |
+| POST   | `/api/register/`                                    | User Registration                        |
+| POST   | `/api/login/`                                       | User Login                               |
+| POST   | `/chat/`                                            | For Chat with Gemini                     |
+
+### Register
+```bash
+{
+    "name": "demo",
+    "email": "demo@gmail.com",
+    "password": "demo@123",
+}
+```
+
+### Login
+```bash
+{
+    "email": "demo@gmail.com",
+    "password": "demo@123"
+}
+```
+
+### Chat
+```bash
+{
+    "message": "why sky is blue?"
+}
+```
